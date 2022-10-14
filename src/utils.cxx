@@ -180,12 +180,8 @@ void add_atlas_decorations( TPad * active_pad, bool wip, bool sim ){
   sim_ltx->SetTextSize(0.038);
   sim_ltx->SetTextColor(1);
   atlas_logo_ltx->DrawLatexNDC( 0.187, 0.75, "ATLAS" );
-  if ( sim ){ sim_ltx->DrawLatexNDC( 0.187, 0.705, "Simulation" ); }
-	if ( wip && !sim ){
-    wip_ltx->DrawLatexNDC( 0.187, 0.705, "Work In Progress" );
-	} else if ( wip && sim ){
-    wip_ltx->DrawLatexNDC( 0.187, 0.695, "Work In Progress" );
-	}
+  if ( sim ){ sim_ltx->DrawLatexNDC( 0.350, 0.75, "Simulation" ); }
+	if ( wip ){ wip_ltx->DrawLatexNDC( 0.187, 0.705, "Work In Progress" ); }
 }
 
 TLegend * create_atlas_legend(){
