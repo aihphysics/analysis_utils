@@ -163,6 +163,11 @@ void set_axis_labels( TH1F * hist, std::string xaxis, std::string yaxis ){
   hist->GetYaxis()->SetTitle( yaxis.c_str() );
 }
 
+void set_2d_axis_labels( TH2F * hist, std::string xaxis, std::string yaxis ){
+  hist->GetXaxis()->SetTitle( xaxis.c_str() );
+  hist->GetYaxis()->SetTitle( yaxis.c_str() );
+}
+
 void add_atlas_decorations( TPad * active_pad, bool wip, bool sim ){
   active_pad->cd();
   TLatex * atlas_logo_ltx = new TLatex(); 

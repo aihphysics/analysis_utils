@@ -26,6 +26,7 @@ extern "C" void style_hist( TH1F * hist, std::vector< float > & style_vec );
 // add ability to style fits
 //extern "C" void style_hist( TH1F * hist, std::vector< float > & style_vec );
 extern "C" void set_axis_labels( TH1F * hist, std::string xaxis, std::string yaxis );
+extern "C" void set_2d_axis_labels( TH2F * hist, std::string xaxis, std::string yaxis );
 extern "C" TLegend * below_logo_legend();
 extern "C" TPaveStats * get_fit_stats( TH1F * hist );
 extern "C" TLegend * create_stat_legend();
