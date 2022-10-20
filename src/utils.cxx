@@ -170,6 +170,7 @@ void add_atlas_decorations( TPad * active_pad, bool wip, bool sim ){
   active_pad->cd();
   TLatex * atlas_logo_ltx = new TLatex(); 
   atlas_logo_ltx->SetNDC(); 
+  atlas_logo_ltx->SetTextSize(0.038);
   atlas_logo_ltx->SetTextFont(72);
   atlas_logo_ltx->SetTextColor(1);
   TLatex * wip_ltx = new TLatex(); 
@@ -225,16 +226,23 @@ void style_func( TF1 * func, std::vector<float> & style_vec ){
   func->SetLineWidth( style_vec.at( 3 ) );
 }
 
-TF1 * prep_sg(){
-  TF1 * sg = new TF1( "gauss_truth", "[0]*e^((-([1]-x)^(2))/(2*([2])^(2)))", -5, 15 );
+TF1 * prep_sg( float min, float max ){
+  int rndnum = std::rand() % 10000 + 1;
+  TF1 * sg = new TF1( Form( "sg_%i", rndnum ),
+                     "[0]*e^((-([1]-x)^(2))/(2*([2])^(2)))",
+                     min, max );
   sg->SetParName( 0, "c"); 
   sg->SetParName( 1, "x" ); 
   sg->SetParName( 2, "#sigma" );
   return sg;
 }
 
-TF1 * prep_dg(){
-  TF1 * dg = new TF1( "dg_truth", "[0]*e^((-([1]-x)^(2))/(2*([2])^(2))) + [3]*e^((-([1]-x)^(2))/(2*([4])^(2)))", -5, 15 );
+TF1 * prep_dg( float min, float max ){
+  int rndnum = std::rand() % 10000 + 1;
+  TF1 * dg = new TF1( Form( "dg_%i", rndnum ), 
+                     "[0]*e^((-([1]-x)^(2))/(2*([2])^(2)))"
+                     "+ [3]*e^((-([1]-x)^(2))/(2*([4])^(2)))", 
+                     min, max );
   dg->SetParName( 0, "c_{1}"); 
   dg->SetParName( 1, "x" ); 
   dg->SetParName( 2, "#sigma_{1}" );
@@ -243,8 +251,15 @@ TF1 * prep_dg(){
   return dg;
 }
 
-
-
+TF1 * prep_line( float min, float max ){
+  int rndnum = std::rand() % 10000 + 1;
+  TF1 * line = new TF1( Form( "line_%i", rndnum), "[0]*x + [1]", min, max );
+  line->SetParameter( 0, 0 );
+  line->SetParameter( 1, 1 );
+  line->SetParName( 0, "m" );
+  line->SetParName( 1, "c" );
+  return line;
+}
 
 TH1F * quadrature_error_combination( TH1F * stat, std::vector<TH1F *> systematic, bool sys_only ){
   TH1F * combined_hist = (TH1F*) stat->Clone();

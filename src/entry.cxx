@@ -1,6 +1,6 @@
 #include "common.hxx"
-#include "var.hxx"
-#include "bounds.hxx"
+#include "bound.hxx"
+#include "bound_mgr.hxx"
 #include "cutflow.hxx"
 #include "utils.hxx"
 

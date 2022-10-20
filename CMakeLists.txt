@@ -8,7 +8,7 @@ target_compile_options( ROOT::Core INTERFACE ${ROOT_DEFINITIONS} )
 add_compile_options( -Wall -Werror -Wextra -pedantic -Ofast -fPIC )
 
 include_directories( inc )
-set( files src/bounds.cxx src/cutflow.cxx src/entry.cxx src/utils.cxx src/var.cxx src/style.cxx )
+set( files src/bound.cxx src/bound_mgr.cxx src/cutflow.cxx src/entry.cxx src/style.cxx src/utils.cxx )
 
 add_library( analysisutil SHARED ${files} )
 set_target_properties( analysisutil PROPERTIES LINKER_LANGUAGE CXX )

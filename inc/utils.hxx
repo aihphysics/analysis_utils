@@ -31,8 +31,8 @@ extern "C" TLegend * create_stat_legend();
 extern "C" void align_sg( TF1 * sg_func, TH1F * hist );
 extern "C" void align_dg( TF1 * sg_func, TH1F * hist );
 extern "C" void style_func( TF1 * func, std::vector<float> & style_vec );
-extern "C" TF1 * prep_dg();
-extern "C" TF1 * prep_sg();
-
+extern "C" TF1 * prep_dg( float min = -100, float max = 100 );
+extern "C" TF1 * prep_sg( float min = -100, float max = 100 );
+extern "C" TF1 * prep_line( float min = -100, float max = 100 );
 
 #endif

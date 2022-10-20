@@ -39,9 +39,4 @@
 #include <getopt.h>
 #include <stdlib.h>
 
-//#include "/home/crucible/analysis/main/style/AtlasStyle.h"
-//#include "/home/crucible/analysis/main/style/AtlasLabels.h"
-//#include "/home/crucible/analysis/main/style/AtlasUtils.h"
-
-
 #endif
