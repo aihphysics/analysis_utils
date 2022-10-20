@@ -44,7 +44,9 @@ extern "C" class bound_mgr final{
     void set_bound( std::string name, std::string var, int bins, double min, double max, std::string units, std::string ltx );
 
     bound_mgr();
-    bound_mgr( std::string bound_mgr_file );
+    bound_mgr( std::string bound_mgr_filename ){
+      this->bound_mgr_filename = bound_mgr_filename;
+    };
 
 };
 
