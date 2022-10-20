@@ -3,10 +3,8 @@
 #define utils_hxx
 
 #include "common.hxx"
-#include "atlas_style.hxx"
 
-extern "C" void prep_style();
-extern "C" void hist_prep_axes( TH1F * hist );
+extern "C" void hist_prep_axes( TH1 * hist );
 extern "C" void hist_prep_data( TH1F * hist );
 extern "C" void hist_prep_sign( TH1F * hist );
 extern "C" void hist_prep_bckg( TH1F * hist );
@@ -30,5 +28,11 @@ extern "C" void set_2d_axis_labels( TH2F * hist, std::string xaxis, std::string 
 extern "C" TLegend * below_logo_legend();
 extern "C" TPaveStats * get_fit_stats( TH1F * hist );
 extern "C" TLegend * create_stat_legend();
+extern "C" void align_sg( TF1 * sg_func, TH1F * hist );
+extern "C" void align_dg( TF1 * sg_func, TH1F * hist );
+extern "C" void style_func( TF1 * func, std::vector<float> & style_vec );
+extern "C" TF1 * prep_dg();
+extern "C" TF1 * prep_sg();
+
 
 #endif

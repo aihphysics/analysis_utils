@@ -16,23 +16,21 @@ void split_strings(std::vector<std::string> & vec_split, std::string str_split, 
 
 }
 
-void prep_style(){
-  gStyle->SetEndErrorSize( 15 );
-  SetAtlasStyle();
-  gStyle->SetEndErrorSize( 15 );
-  gROOT->SetBatch(true);
-  gStyle->SetOptStat(0);
-  gStyle->SetOptFit(1);
-  gStyle->SetPadTopMargin(0.19);
-  gStyle->SetPadRightMargin(0.16);
-  gStyle->SetPadBottomMargin(0.16);
-  gStyle->SetPadLeftMargin(0.16);
-  gStyle->SetEndErrorSize( 15 );
+void align_sg( TF1 * sg_func, TH1F * hist ){
+  sg_func->SetParameter( 0, hist->GetMaximum() );
+  sg_func->SetParameter( 1, hist->GetMean() );
+  sg_func->SetParameter( 2, hist->GetStdDev() );
 }
 
+void align_dg( TF1 * dg_func, TH1F * hist){
+  dg_func->SetParameter( 0, hist->GetMaximum()*(2./3.) );
+  dg_func->SetParameter( 1, hist->GetMean() );
+  dg_func->SetParameter( 2, hist->GetStdDev() );
+  dg_func->SetParameter( 3, hist->GetMaximum()*(1./3.) );
+  dg_func->SetParameter( 4, hist->GetStdDev()*2 );
+}
 
-
-void hist_prep_axes( TH1F * hist ){
+void hist_prep_axes( TH1 * hist ){
   hist->GetYaxis()->SetRangeUser( 0, hist->GetMaximum()*1.75 );
   hist->GetYaxis()->SetLabelSize( 0.035 );
   hist->GetYaxis()->SetTitleSize( 0.035 );
@@ -219,6 +217,34 @@ void style_hist( TH1F * hist, std::vector< float > & style_vec ){
   hist->SetFillColorAlpha( style_vec.at( 8 ), style_vec.at( 9 ) );
   hist->SetFillStyle( style_vec.at( 10 ) );
 }
+
+
+void style_func( TF1 * func, std::vector<float> & style_vec ){
+  func->SetLineStyle( style_vec.at( 0 ) );
+  func->SetLineColorAlpha( style_vec.at( 0 ), style_vec.at( 1 ) );
+  func->SetLineWidth( style_vec.at( 3 ) );
+}
+
+TF1 * prep_sg(){
+  TF1 * sg = new TF1( "gauss_truth", "[0]*e^((-([1]-x)^(2))/(2*([2])^(2)))", -5, 15 );
+  sg->SetParName( 0, "c"); 
+  sg->SetParName( 1, "x" ); 
+  sg->SetParName( 2, "#sigma" );
+  return sg;
+}
+
+TF1 * prep_dg(){
+  TF1 * dg = new TF1( "dg_truth", "[0]*e^((-([1]-x)^(2))/(2*([2])^(2))) + [3]*e^((-([1]-x)^(2))/(2*([4])^(2)))", -5, 15 );
+  dg->SetParName( 0, "c_{1}"); 
+  dg->SetParName( 1, "x" ); 
+  dg->SetParName( 2, "#sigma_{1}" );
+  dg->SetParName( 3, "c_{2}"); 
+  dg->SetParName( 4, "#sigma_{2}" );
+  return dg;
+}
+
+
+
 
 TH1F * quadrature_error_combination( TH1F * stat, std::vector<TH1F *> systematic, bool sys_only ){
   TH1F * combined_hist = (TH1F*) stat->Clone();
