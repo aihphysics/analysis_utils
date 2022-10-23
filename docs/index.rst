@@ -20,8 +20,8 @@ Indices and tables
 * :ref:`search`
 
 
-Clases
-======
+Classes
+=======
 
-.. doxygenclass:: bound_mgr 
+.. doxygenclass:: AnalysisUtils::bound_mgr
    :members:
