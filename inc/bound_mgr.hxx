@@ -10,7 +10,7 @@ extern "C" class bound_mgr final{
 
   private:
     std::string bound_mgr_filename;
-    std::map< std::string, bound > bounds;
+    std::map< std::string, bound > * bounds;
 
   public:
     void load_bound_mgr( );
@@ -20,7 +20,7 @@ extern "C" class bound_mgr final{
     std::string get_cut( std::string bound );
     
     bound get_bound( std::string name );
-    std::string get_var( std::string var );
+    std::string get_var( std::string name );
     int get_bins( std::string name );
     double get_min( std::string name );
     double get_max( std::string name );
@@ -43,8 +43,13 @@ extern "C" class bound_mgr final{
     void set_bound( std::string name, std::string var, int bins, double min, double max );
     void set_bound( std::string name, std::string var, int bins, double min, double max, std::string units, std::string ltx );
 
-    bound_mgr();
+    void process_bounds_string( std::string bounds_string );
+
+    bound_mgr(){
+      bounds = new std::map< std::string, bound>();
+    };
     bound_mgr( std::string bound_mgr_filename ){
+      bounds = new std::map< std::string, bound>();
       this->bound_mgr_filename = bound_mgr_filename;
     };
 
