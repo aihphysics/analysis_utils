@@ -18,7 +18,10 @@ extern "C" class bound_mgr final{
     void set_bound_mgr( std::string bound_mgr_file );
 
     std::string get_cut( std::string bound );
-    
+    std::vector< std::string > get_cut_series( std::string name, int bins=0 );
+    double get_width( std::string name );
+    double get_bin_width( std::string name );
+
     bound get_bound( std::string name );
     std::string get_var( std::string name );
     int get_bins( std::string name );

@@ -31,12 +31,14 @@ void align_dg( TF1 * dg_func, TH1F * hist){
 }
 
 void hist_prep_axes( TH1 * hist ){
+  //hist->GetXaxis()->SetRange( hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax() );
   hist->GetYaxis()->SetRangeUser( 0, hist->GetMaximum()*1.75 );
   hist->GetYaxis()->SetLabelSize( 0.035 );
   hist->GetYaxis()->SetTitleSize( 0.035 );
   hist->GetXaxis()->SetLabelSize( 0.035 );
   hist->GetXaxis()->SetTitleSize( 0.035 );
   hist->GetYaxis()->SetMaxDigits( 3 );
+  //hist->GetXaxis()->SetRange( 1, hist->GetNbinsX() );
 }
 
 void hist_prep_data( TH1F * hist ){
@@ -277,7 +279,7 @@ TH1F * quadrature_error_combination( TH1F * stat, std::vector<TH1F *> systematic
   return combined_hist;
 }
 
-TPaveStats * get_fit_stats( TH1F * hist ){
+TPaveStats * get_fit_stats( TH1 * hist ){
   gPad->Modified(); gPad->Update();
   TPaveStats * stats = (TPaveStats*) hist->FindObject("stats");
   stats->SetX1NDC( 0.56 ); 

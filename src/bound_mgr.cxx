@@ -9,6 +9,8 @@ bound bound_mgr::get_bound( std::string name ){
   }
 }
 
+
+
 std::string bound_mgr::get_var( std::string name ){
   return bounds->find( name )->second.get_var();
 }
@@ -33,12 +35,41 @@ std::string bound_mgr::get_ltx( std::string name ){
   return bounds->find( name )->second.get_ltx();
 }
 
+double bound_mgr::get_width( std::string name ){
+  double max  = ( bounds->find( name )->second ).get_max();
+  double min  = ( bounds->find( name )->second ).get_min();
+  return ( max - min );
+}
+
+double bound_mgr::get_bin_width( std::string name ){
+  return ( this->get_width( name ) )/( (double) this->get_bins( name ) );
+}
+
+
 std::string bound_mgr::get_cut( std::string name ){
   double temp_min = this->get_min( name );
   double temp_max = this->get_max( name );
-  const char * temp_name = name.c_str();
-  return std::string( Form( "%s>%.5f&&%s<%.5f", temp_name, temp_min,
-                            temp_name, temp_max) );
+  std::string temp_name = this->get_var( name );
+  return std::string( Form( "(%s>%.3f)&&(%s<%.5f)", temp_name.c_str(), temp_min,
+                            temp_name.c_str(), temp_max ) );
+}
+
+std::vector< std::string > bound_mgr::get_cut_series( std::string name, int bins ){
+  if ( bins == 0 ){
+    bins = this->get_bins( name );
+  }
+  std::vector< std::string > cut_series;
+  double min = this->get_min( name );
+  double max = this->get_max( name );
+  double width = ( max - min )/( (double) bins );
+  std::string var = this->get_var( name );
+  for ( int cut_idx = 0; cut_idx < bins; cut_idx++ ){
+    double lower = min + width*cut_idx;
+    double upper = lower + width;
+    cut_series.push_back( Form( "%s>%.5f&&%s<%.5f", var.c_str(), lower, 
+                                var.c_str(), upper ) );
+  }
+  return cut_series;
 }
 
 void bound_mgr::set_name( std::string name, std::string new_name ){
