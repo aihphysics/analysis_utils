@@ -50,7 +50,7 @@ std::string bound_mgr::get_cut( std::string name ){
   double temp_min = this->get_min( name );
   double temp_max = this->get_max( name );
   std::string temp_name = this->get_var( name );
-  return std::string( Form( "(%s>%.3f)&&(%s<%.5f)", temp_name.c_str(), temp_min,
+  return std::string( Form( "(%s>%.5f)&&(%s<%.5f)", temp_name.c_str(), temp_min,
                             temp_name.c_str(), temp_max ) );
 }
 
@@ -66,7 +66,7 @@ std::vector< std::string > bound_mgr::get_cut_series( std::string name, int bins
   for ( int cut_idx = 0; cut_idx < bins; cut_idx++ ){
     double lower = min + width*cut_idx;
     double upper = lower + width;
-    cut_series.push_back( Form( "%s>%.5f&&%s<%.5f", var.c_str(), lower, 
+    cut_series.push_back( Form( "(%s>%.5f)&&(%s<%.5f)", var.c_str(), lower, 
                                 var.c_str(), upper ) );
   }
   return cut_series;
