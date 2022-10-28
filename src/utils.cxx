@@ -16,18 +16,26 @@ void split_strings(std::vector<std::string> & vec_split, std::string str_split, 
 
 }
 
-void align_sg( TF1 * sg_func, TH1F * hist ){
+void align_sg( TF1 * sg_func, TH1F * hist, bool limit ){
   sg_func->SetParameter( 0, hist->GetMaximum() );
   sg_func->SetParameter( 1, hist->GetMean() );
   sg_func->SetParameter( 2, hist->GetStdDev() );
+  if ( limit ){
+    sg_func->SetParLimits( 2, hist->GetStdDev()/2.0, hist->GetStdDev()*2.0 );
+  }
+
 }
 
-void align_dg( TF1 * dg_func, TH1F * hist){
+void align_dg( TF1 * dg_func, TH1F * hist, bool limit){
   dg_func->SetParameter( 0, hist->GetMaximum()*(2./3.) );
   dg_func->SetParameter( 1, hist->GetMean() );
   dg_func->SetParameter( 2, hist->GetStdDev() );
   dg_func->SetParameter( 3, hist->GetMaximum()*(1./3.) );
-  dg_func->SetParameter( 4, hist->GetStdDev()*2 );
+  dg_func->SetParameter( 4, hist->GetStdDev()*3 );
+  if ( limit ){
+    dg_func->SetParLimits( 2, hist->GetStdDev()/3.0, hist->GetStdDev() );
+    dg_func->SetParLimits( 4, hist->GetStdDev(), hist->GetStdDev()*4.0 );
+  }
 }
 
 void hist_prep_axes( TH1 * hist ){
@@ -224,7 +232,7 @@ void style_hist( TH1F * hist, std::vector< float > & style_vec ){
 
 void style_func( TF1 * func, std::vector<float> & style_vec ){
   func->SetLineStyle( style_vec.at( 0 ) );
-  func->SetLineColorAlpha( style_vec.at( 0 ), style_vec.at( 1 ) );
+  func->SetLineColorAlpha( style_vec.at( 1 ), style_vec.at( 2 ) );
   func->SetLineWidth( style_vec.at( 3 ) );
 }
 
@@ -279,16 +287,22 @@ TH1F * quadrature_error_combination( TH1F * stat, std::vector<TH1F *> systematic
   return combined_hist;
 }
 
-TPaveStats * get_fit_stats( TH1 * hist ){
-  gPad->Modified(); gPad->Update();
+TPaveStats * make_stats( TH1 * hist, bool small, bool shifted ){
+  if ( shifted ){ small = true; };
+  double shift = 0.13 * shifted;
+  double width = 0.24 / ( 1 + small );
+  gPad->Update();
   TPaveStats * stats = (TPaveStats*) hist->FindObject("stats");
-  stats->SetX1NDC( 0.56 ); 
-  stats->SetX2NDC( 0.81 );
+  stats->SetX1NDC( 0.56 + shift ); 
+  stats->SetX2NDC( 0.56 + shift + width);
   stats->SetY1NDC( 0.55 ); 
   stats->SetY2NDC( 0.78 );
   stats->SetFillStyle( 0 ); 
   stats->SetTextFont( 42 );
-  stats->SetTextSize( 0.02 );
+  stats->SetTextSize( 0.02 * ( 2 / ( 2+small ) ) );
+  stats->SetBorderSize( 1 );
+  gPad->Modified();
+  gPad->Update();
   return stats;
 }
 

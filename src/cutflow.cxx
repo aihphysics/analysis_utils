@@ -17,7 +17,7 @@ void cutflow::write( std::string unique ){
     hist_prep_axes( var_hist );
     set_axis_labels( var_hist, var_str, Form("Pass cut %i", cut_idx ) );
     style_hist( var_hist, var_style );
-    TPaveStats * var_stats = get_fit_stats( var_hist );
+    TPaveStats * var_stats = make_stats( var_hist );
     var_stats->Draw();
     add_atlas_decorations( var_pad, true, false );
     std::string var_title(Form("Cut %i, %s, %s",cut_idx, cut_names[cut_idx-1].c_str(), var_str.c_str() ) );
@@ -40,7 +40,7 @@ void cutflow::write( std::string unique ){
     cutflow_axis->SetBinLabel(bin_no,(cut_names[bin_no-1]).c_str());
     cutflow_axis->ChangeLabel(bin_no,-90.0);
   }
-  TPaveStats * cf_stats = get_fit_stats( cutflow_hist );
+  TPaveStats * cf_stats = make_stats( cutflow_hist );
   cf_stats->Draw(); 
   add_atlas_decorations( cutflow_pad, true );
 

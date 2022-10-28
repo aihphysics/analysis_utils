@@ -72,6 +72,16 @@ std::vector< std::string > bound_mgr::get_cut_series( std::string name, int bins
   return cut_series;
 }
 
+std::vector< std::string > bound_mgr::get_series_names( std::string name, int bins ){
+  
+  if ( bins == 0 ){ bins = this->get_bins( name ); }
+  std::vector< std::string > series_names;
+  for ( int cut_idx = 0; cut_idx < bins; cut_idx++ ){
+    series_names.push_back( Form( "%s%i", name.c_str(), cut_idx ) ); 
+  }
+  return series_names;
+}
+
 void bound_mgr::set_name( std::string name, std::string new_name ){
   auto bound = bounds->extract( name );
   bound.key() = new_name;

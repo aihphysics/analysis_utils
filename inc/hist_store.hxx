@@ -22,7 +22,6 @@ extern "C" class hist_store{
     }
   
     hist_store( std::string file_path ) : hist_store() {
-      hist_store();
       output_file = new TFile( file_path.c_str(), "RECREATE" );
     }
   

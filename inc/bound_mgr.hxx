@@ -19,6 +19,7 @@ extern "C" class bound_mgr final{
 
     std::string get_cut( std::string bound );
     std::vector< std::string > get_cut_series( std::string name, int bins=0 );
+    std::vector< std::string > get_series_names( std::string name, int bins=0 );
     double get_width( std::string name );
     double get_bin_width( std::string name );
 

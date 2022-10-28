@@ -3,7 +3,7 @@
 void hist_store::set_output_file( std::string file_path ){
 
   if ( this->output_file != nullptr ){
-    output_file = new TFile( file_path.c_str(), "RECREATE" );
+    output_file = new TFile( file_path.c_str(), "UPDATE" );
   } else {
     std::cout << "Store "  << output_file->GetName() << " is already initialised." << std::endl;
     std::cout << "No action taken." << std::endl;

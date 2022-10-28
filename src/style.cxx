@@ -2,8 +2,6 @@
 
 void prep_style() {
 
-
-  
   gROOT->SetBatch(true);
 
   gStyle->SetPaperSize( 20, 26 );
@@ -26,7 +24,6 @@ void prep_style() {
   gStyle->SetPadBorderMode(icol);
   gStyle->SetPadColor(icol);
   gStyle->SetStatColor(icol);
-
 
   // set title offsets (for axis label)
   gStyle->SetTitleXOffset(1.3);
