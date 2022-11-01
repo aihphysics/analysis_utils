@@ -21,7 +21,7 @@ void align_sg( TF1 * sg_func, TH1F * hist, bool limit ){
   sg_func->SetParameter( 1, hist->GetMean() );
   sg_func->SetParameter( 2, hist->GetStdDev() );
   if ( limit ){
-    sg_func->SetParLimits( 2, hist->GetStdDev()/2.0, hist->GetStdDev()*2.0 );
+    sg_func->SetParLimits( 2, hist->GetStdDev()/10.0, hist->GetStdDev()*2.0 );
   }
 
 }
