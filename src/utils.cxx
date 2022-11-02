@@ -38,9 +38,9 @@ void align_dg( TF1 * dg_func, TH1F * hist, bool limit){
   }
 }
 
-void hist_prep_axes( TH1 * hist ){
+void hist_prep_axes( TH1 * hist, bool zero ){
   //hist->GetXaxis()->SetRange( hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax() );
-  hist->GetYaxis()->SetRangeUser( 0, hist->GetMaximum()*1.75 );
+  hist->GetYaxis()->SetRangeUser( !zero * hist->GetMinimum() * 1.75, hist->GetMaximum() * 1.75 );
   hist->GetYaxis()->SetLabelSize( 0.035 );
   hist->GetYaxis()->SetTitleSize( 0.035 );
   hist->GetXaxis()->SetLabelSize( 0.035 );
@@ -49,38 +49,31 @@ void hist_prep_axes( TH1 * hist ){
   //hist->GetXaxis()->SetRange( 1, hist->GetNbinsX() );
 }
 
-void hist_prep_data( TH1F * hist ){
-  hist->GetYaxis()->SetRangeUser( 0, hist->GetMaximum()*1.5 );
-  hist->SetLineWidth( 1 );
-  hist->SetLineColorAlpha( 1, 0.8 );
-  hist->GetYaxis()->SetLabelSize( 0.035 );
-  hist->GetYaxis()->SetTitleSize( 0.035 );
-  hist->GetXaxis()->SetLabelSize( 0.035 );
-  hist->GetXaxis()->SetTitleSize( 0.035 );
-  hist->GetYaxis()->SetMaxDigits( 3 );
+std::map< std::string, std::vector< double > > prep_binnings( std::string input_range ){
+
+  std::map< std::string, std::vector<double> > bins;
+  bins["qtA"]           =  std::vector<double>{ 15,  -10,  20};
+  bins["BDT"]           =  std::vector<double>{ 10,  -1.0, 1.0};
+  bins["abs(qtB)"]      =  std::vector<double>{ 10,  0,    20};
+  bins["qtB"]           =  std::vector<double>{ 10,  0,    20};
+  bins["Phi"]           =  std::vector<double>{ 8,   0,    M_PI};
+  bins["DPhi"]          =  std::vector<double>{ 8,   0,    M_PI};
+  bins["DiMuonPt"]      =  std::vector<double>{ 10,  5,    30};
+  bins["PhotonPt"]      =  std::vector<double>{ 10,  5,    25};
+
+  if ( !input_range.empty() ){
+    std::vector< std::string > arg_bin;
+    std::vector< std::string > set_bins;
+    split_strings( arg_bin, input_range, "_" );
+    split_strings( set_bins, arg_bin.at(1), "," );
+    std::map< std::string, std::vector<double> >::iterator bin_map_itr = bins.find( arg_bin.at( 0 ).c_str() );
+    bin_map_itr->second = { std::stod( set_bins.at( 0 ) ), std::stod( set_bins.at( 1 ) ), std::stod( set_bins.at( 2 ) ) };
+  }
+
+  return bins;
+
 }
 
-void hist_prep_sign( TH1F * hist ){
-  hist->GetYaxis()->SetRangeUser( 0, hist->GetMaximum()*1.5 );
-  hist->SetLineWidth( 1 );
-  hist->SetLineColorAlpha( kRed+1, 1 );
-  hist->GetYaxis()->SetLabelSize( 0.035 );
-  hist->GetYaxis()->SetTitleSize( 0.035 );
-  hist->GetXaxis()->SetLabelSize( 0.035 );
-  hist->GetXaxis()->SetTitleSize( 0.035 );
-  hist->GetYaxis()->SetMaxDigits( 3 );
-}
-
-void hist_prep_bbbg( TH1F * hist ){
-  hist->GetYaxis()->SetRangeUser( 0, hist->GetMaximum()*1.5 );
-  hist->SetLineWidth( 1 );
-  hist->SetLineColorAlpha( kGreen+1, 0.9 );
-  hist->GetYaxis()->SetLabelSize( 0.035 );
-  hist->GetYaxis()->SetTitleSize( 0.035 );
-  hist->GetXaxis()->SetLabelSize( 0.035 );
-  hist->GetXaxis()->SetTitleSize( 0.035 );
-  hist->GetYaxis()->SetMaxDigits( 3 );
-}
 
 
 TH1F * errorbar_to_hist( TH1F * hist, bool absolute ){
@@ -204,7 +197,7 @@ TLegend * create_atlas_legend(){
   pad_legend->SetFillColor( 0 );
   pad_legend->SetFillStyle( 0 );
   pad_legend->SetTextFont( 42 );
-  pad_legend->SetTextSize( 0.015 );
+  pad_legend->SetTextSize( 0.025 );
   return pad_legend;
 }
 
@@ -214,7 +207,7 @@ TLegend * below_logo_legend(){
   pad_legend->SetFillColor( 0 );
   pad_legend->SetFillStyle( 0 );
   pad_legend->SetTextFont( 42 );
-  pad_legend->SetTextSize( 0.015 );
+  pad_legend->SetTextSize( 0.025 );
   return pad_legend;
 }
 
