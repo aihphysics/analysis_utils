@@ -5,7 +5,7 @@
 #include "common.hxx"
 #include "utils.hxx"
 
-
+// Class for analysing histograms with numerous styles of fit.
 class analyser{
 
   private:

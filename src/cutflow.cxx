@@ -1,5 +1,7 @@
 #include <cutflow.hxx>
 
+// write out cutflow histograms
+// makes use of utils and style functions in library
 void cutflow::write( std::string unique ){
 
   void prep_style();

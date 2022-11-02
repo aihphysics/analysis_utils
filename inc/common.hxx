@@ -1,3 +1,4 @@
+// simple include header covering everything i usually need.
 
 #ifndef common_hxx
 #define common_hxx

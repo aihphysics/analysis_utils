@@ -8,18 +8,18 @@
 extern "C" class cutflow {
 
   public:
-
+    
+    // member variables
     int cuts;
     std::string var_str, output_str;
     std::vector< std::string > cut_names;
     TH1F * cutflow_hist;
-   
     double var;
     bool distribution;
     std::vector< TH1F* > cut_distributions;
 
+    //constructors
     cutflow(){};
-
     cutflow( int cuts, std::string cut_names, bool distribution=false, std::string var_name="", double var=0 ){
         
       this->cuts = cuts;
@@ -34,12 +34,16 @@ extern "C" class cutflow {
       }
     }
 
+    // Fill a cutflow step
     void fill( int cut ){
       cutflow_hist->Fill( cut-1 );
       if ( distribution ){ cut_distributions.at( cut-1 )->Fill( var ); }
     }
 
+    // set the variable to produce with cutflow  
     void set_var( double var ){ this->var = var; }
+
+    // write out the cutflow
     void write( std::string unique );
     
 };

@@ -1,5 +1,6 @@
 #include "style.hxx"
 
+// prepare root style
 void prep_style() {
 
   gROOT->SetBatch(true);

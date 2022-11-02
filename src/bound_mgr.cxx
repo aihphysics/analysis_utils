@@ -1,5 +1,8 @@
 #include <bound_mgr.hxx>
 
+// getters
+
+// start of basic getters
 bound bound_mgr::get_bound( std::string name ){
   if ( bounds->find( name ) != bounds->end() ){
     return bounds->find( name )->second;
@@ -8,8 +11,6 @@ bound bound_mgr::get_bound( std::string name ){
     return bound( "null" );
   }
 }
-
-
 
 std::string bound_mgr::get_var( std::string name ){
   return bounds->find( name )->second.get_var();
@@ -44,8 +45,10 @@ double bound_mgr::get_width( std::string name ){
 double bound_mgr::get_bin_width( std::string name ){
   return ( this->get_width( name ) )/( (double) this->get_bins( name ) );
 }
+// end of basic getters
 
-
+// start of complex getters
+// getter to produce the cut this bound would produce
 std::string bound_mgr::get_cut( std::string name ){
   double temp_min = this->get_min( name );
   double temp_max = this->get_max( name );
@@ -54,6 +57,7 @@ std::string bound_mgr::get_cut( std::string name ){
                             temp_name.c_str(), temp_max ) );
 }
 
+// getter to produce a series of cuts if this bound is subdivided by a number of bins
 std::vector< std::string > bound_mgr::get_cut_series( std::string name, int bins ){
   if ( bins == 0 ){
     bins = this->get_bins( name );
@@ -72,6 +76,7 @@ std::vector< std::string > bound_mgr::get_cut_series( std::string name, int bins
   return cut_series;
 }
 
+// getter too
 std::vector< std::string > bound_mgr::get_series_names( std::string name, int bins ){
   
   if ( bins == 0 ){ bins = this->get_bins( name ); }
@@ -82,6 +87,8 @@ std::vector< std::string > bound_mgr::get_series_names( std::string name, int bi
   return series_names;
 }
 
+
+// start of setters
 void bound_mgr::set_name( std::string name, std::string new_name ){
   auto bound = bounds->extract( name );
   bound.key() = new_name;
@@ -112,16 +119,20 @@ void bound_mgr::set_units( std::string name, std::string units ){
 void bound_mgr::set_ltx( std::string name, std::string ltx ){
   bounds->find( name )->second.set_ltx( ltx );
 }
+// end of setters
 
+// add a blank bound
 void bound_mgr::add_bound( std::string name ){
   bounds->insert( std::pair< std::string, bound>( name, bound( name ) ) );
 }
 
+// add a bound with the basics
 void bound_mgr::add_bound( std::string name, std::string var, int bins, double min, double max  ){
   bound temp_bound( name, var, bins, min, max );
   bounds->insert( std::pair< std::string, bound>( name, temp_bound ) );
 }
 
+// adds a bound with the decorations
 void bound_mgr::add_bound( std::string name, std::string var, int bins, double min, double max, std::string units, std::string ltx ){
   bound temp_bound( name, var, bins, min, max );
   temp_bound.set_units( units );
@@ -129,6 +140,7 @@ void bound_mgr::add_bound( std::string name, std::string var, int bins, double m
   bounds->insert( std::pair< std::string, bound>( name, temp_bound ) );
 }
 
+// sets the details of a bound
 void bound_mgr::set_bound( std::string name, std::string var, int bins, double min, double max ){
   this->set_bound( name, var, bins, min, max, this->get_units( name ), this->get_ltx( name ) );
 }
@@ -142,10 +154,12 @@ void bound_mgr::set_bound( std::string name, std::string var, int bins, double m
   this->set_ltx( name, ltx );
 }
 
+// load the bound manager
 void bound_mgr::load_bound_mgr(){
 	this->load_bound_mgr( this->bound_mgr_filename );
 }
 
+// load bounds into the manager
 void bound_mgr::load_bound_mgr( std::string bound_mgr_filename ){
   std::ifstream bound_mgr_file( bound_mgr_filename );
 	std::string bound_string;
@@ -163,6 +177,8 @@ void bound_mgr::load_bound_mgr( std::string bound_mgr_filename ){
   bound_mgr_file.close();
 }
 
+// process additional bounds in string form
+// bounds manually supplied in string form overwrite the bounds already stored
 void bound_mgr::process_bounds_string( std::string bounds_string ){
 
   if ( bounds_string.empty() ){ return; }

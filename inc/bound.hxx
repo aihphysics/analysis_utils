@@ -5,6 +5,8 @@
 
 #include "common.hxx"
 
+// class to contain variables for defining variable bounds in jpsi+gamma analysis
+// Could probably be replaced with a struct -> to come.
 extern "C" class bound {
 
   public:
@@ -42,16 +44,8 @@ extern "C" class bound {
       this->ltx = ltx;
     }
 
-    //bound( const  bound & cpy_bound ){
-    //  name = std::string( cpy_bound.get_name() );
-    //  var = std::string( cpy_bound.get_var() );
-    //  bins = int( cpy_bound.get_bins() );
-    //  min = double( cpy_bound.get_min() );
-    //  max = double( cpy_bound.get_max() );
-    //  units = std::string( cpy_bound.get_units() );
-    //  ltx = std::string( cpy_bound.get_ltx() );
-    //}
     
+    // setters
     void set_name( std::string name );
     void set_var( std::string var );
     void set_bins( int bins );
@@ -60,6 +54,7 @@ extern "C" class bound {
     void set_units( std::string units);
     void set_ltx( std::string ltx );
 
+    // getters
     std::string get_name();
     std::string get_var();
     int get_bins();
