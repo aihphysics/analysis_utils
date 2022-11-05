@@ -3,8 +3,11 @@
 #define utils_hxx
 
 #include "common.hxx"
+#include "bound.hxx"
+#include "bound_mgr.hxx"
 
 extern "C" void hist_prep_axes( TH1 * hist, bool zero=false );
+extern "C" void error_prep_axes( TGraphAsymmErrors * err );
 extern "C" TH1F * errorbar_to_hist( TH1F * hist, bool absolute=true );
 extern "C" TH1F * hist_to_errorbar( TH1F * base, TH1F * err_hist, bool absolute=true );
 extern "C" TH1F * quadrature_error_combination( TH1F * stat, std::vector<TH1F *> systematic, bool sys_only=false);
@@ -21,6 +24,7 @@ extern "C" void style_hist( TH1F * hist, std::vector< float > & style_vec );
 // add ability to style fits
 //extern "C" void style_hist( TH1F * hist, std::vector< float > & style_vec );
 extern "C" void set_axis_labels( TH1F * hist, std::string xaxis, std::string yaxis );
+extern "C" void set_err_axis_labels( TGraphAsymmErrors err, std::string xaxis, std::string yaxis );
 extern "C" void set_2d_axis_labels( TH2F * hist, std::string xaxis, std::string yaxis );
 extern "C" TLegend * below_logo_legend();
 extern "C" TPaveStats * make_stats( TH1 * hist, bool small=false, bool shifted=false );
@@ -31,5 +35,8 @@ extern "C" void style_func( TF1 * func, std::vector<float> & style_vec );
 extern "C" TF1 * prep_dg( float min = -100, float max = 100 );
 extern "C" TF1 * prep_sg( float min = -100, float max = 100 );
 extern "C" TF1 * prep_line( float min = -100, float max = 100 );
+extern "C" TH1F * sys_to_error_hist( TH1F * base, TH1F * sys, bool absolute=true );
+extern "C" void compare_systematic( TH1F * base, TH1F * sys, const std::string & var, const std::string & unique );
+
 
 #endif

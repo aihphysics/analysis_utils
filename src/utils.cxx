@@ -49,6 +49,19 @@ void hist_prep_axes( TH1 * hist, bool zero ){
   //hist->GetXaxis()->SetRange( 1, hist->GetNbinsX() );
 }
 
+void error_prep_axes( TGraphAsymmErrors * err ){
+
+  double max = std::max( { err->GetMaximum(), abs( err->GetMinimum() ) } );
+  max = std::ceil( max );
+  err->GetYaxis()->SetRangeUser( max, max );
+  err->GetYaxis()->SetLabelSize( 0.035 );
+  err->GetYaxis()->SetTitleSize( 0.035 );
+  err->GetXaxis()->SetLabelSize( 0.035 );
+  err->GetXaxis()->SetTitleSize( 0.035 );
+  err->GetYaxis()->SetMaxDigits( 3 );
+  //hist->GetXaxis()->SetRange( 1, hist->GetNbinsX() );
+}
+
 std::map< std::string, std::vector< double > > prep_binnings( std::string input_range ){
 
   std::map< std::string, std::vector<double> > bins;
@@ -75,7 +88,7 @@ std::map< std::string, std::vector< double > > prep_binnings( std::string input_
 }
 
 
-
+// turns errorbar on a histogram into histogram containing the error
 TH1F * errorbar_to_hist( TH1F * hist, bool absolute ){
   TH1F * err_hist = (TH1F *) hist->Clone();
   err_hist->Reset();
@@ -88,6 +101,8 @@ TH1F * errorbar_to_hist( TH1F * hist, bool absolute ){
 	return err_hist;
 }
 
+// turns a base histogram and a hisogram representing the error into
+// a single histogram with an errorbar
 TH1F * hist_to_errorbar( TH1F * base, TH1F * err_hist, bool absolute ){
   TH1F * errorbar_hist = (TH1F *) base->Clone();
   errorbar_hist->Reset();
@@ -101,7 +116,7 @@ TH1F * hist_to_errorbar( TH1F * base, TH1F * err_hist, bool absolute ){
 	return errorbar_hist;
 }
 
-
+// take a histogram and an error, convert this into a histogram with the systematic as an error bar;
 TH1F * single_sys_to_error( TH1F * base, TH1F * sys ){
   TH1F * err_hist = (TH1F *) base->Clone();
   err_hist->Reset();
@@ -109,6 +124,18 @@ TH1F * single_sys_to_error( TH1F * base, TH1F * sys ){
   for ( int bin_idx = 1; bin_idx <= bins; bin_idx++ ){
     err_hist->SetBinContent( bin_idx, base->GetBinContent( bin_idx ) );
     err_hist->SetBinError( bin_idx, std::abs( sys->GetBinContent( bin_idx ) - base->GetBinContent( bin_idx ) ) );
+  }
+  return err_hist;
+}
+
+TH1F * sys_to_error_hist( TH1F * base, TH1F * sys, bool absolute ){
+  TH1F * err_hist = (TH1F *) base->Clone();
+  err_hist->Reset();
+  int bins = err_hist->GetNbinsX();
+  for ( int bin_idx = 1; bin_idx <= bins; bin_idx++ ){
+    double error = sys->GetBinContent( bin_idx ) - base->GetBinContent( bin_idx );
+    if ( !absolute ){ error /= base->GetBinContent( bin_idx );}
+    err_hist->SetBinContent( bin_idx, error );
   }
   return err_hist;
 }
@@ -162,6 +189,11 @@ void add_pad_title( TPad * active_pad, std::string title, bool sci_axis ){
 void set_axis_labels( TH1F * hist, std::string xaxis, std::string yaxis ){
   hist->GetXaxis()->SetTitle( xaxis.c_str() );
   hist->GetYaxis()->SetTitle( yaxis.c_str() );
+}
+
+void set_err_axis_labels( TGraphAsymmErrors * err, std::string xaxis, std::string yaxis ){
+  err->GetXaxis()->SetTitle( xaxis.c_str() );
+  err->GetYaxis()->SetTitle( yaxis.c_str() );
 }
 
 void set_2d_axis_labels( TH2F * hist, std::string xaxis, std::string yaxis ){
@@ -308,6 +340,121 @@ TLegend * create_stat_legend(){
   pad_legend->SetTextSize( 0.025 );
   return pad_legend;
 }
+
+
+//TGraphAsymmErrors * diff_to_err( TH1F * diff, bool absolute);
+
+void compare_systematic( TH1F * base, TH1F * sys, const std::string & var, const std::string & unique ){
+  
+  // prep a bound manager
+  bound_mgr * selections = new bound_mgr();
+  selections->load_bound_mgr( "/home/atlas/dhagan/libs/configs/selection_bounds.txt" );
+
+  // prep bound and variables
+  bound var_bound = selections->get_bound( var );
+  int bins = var_bound.get_bins();
+  double min = var_bound.get_min();
+  double max = var_bound.get_max();
+  double width = var_bound.get_width();
+
+  // ready lines and diffs
+  TF1 * unit_line = new TF1( "unit_line", "1", min, max );
+  TF1 * zero_line = new TF1( "zero_line", "1", min, max );
+  TH1F * rel_diff = sys_to_error_hist( base, sys, false );
+  TH1F * abs_diff = sys_to_error_hist( base, sys, true );
+
+  // diff to grapherr start
+  double * sys_x = new double[bins];
+  double * sys_y = new double[bins];
+  double * err_x_lower = new double[bins];
+  double * err_x_upper = new double[bins];
+  double * rel_err_y_lower = new double[bins];
+  double * rel_err_y_upper = new double[bins];
+  double * abs_err_y_lower = new double[bins];
+  double * abs_err_y_upper = new double[bins];
+
+  for ( int bin = 0; bin < bins; bin++ ){
+
+    sys_x[bin] = ( min + ( width/2.0 ) ) + ( width * ( (double) bin ) );
+    sys_y[bin] = 1.0;
+    err_x_lower[bin] = 0;
+    err_x_upper[bin] = 0;
+    double rel_err = rel_diff->GetBinContent( bin + 1 );
+    double abs_err = abs_diff->GetBinContent( bin + 1 );
+    if ( rel_err > 0 ){
+      rel_err_y_lower[bin] = 0.0;
+      rel_err_y_upper[bin] = abs( rel_err );
+      abs_err_y_lower[bin] = 0.0;
+      abs_err_y_upper[bin] = abs( abs_err );
+    } else {
+      rel_err_y_lower[bin] = abs( rel_err );
+      rel_err_y_upper[bin] = 0.0;
+      abs_err_y_lower[bin] = abs( abs_err );
+      abs_err_y_upper[bin] = 0.0;
+    }
+  }
+
+
+  // create symm error graphs
+  TGraphAsymmErrors * rel_err_graph = new TGraphAsymmErrors( bins, sys_x, sys_y, 
+                                          err_x_lower, err_x_upper,
+                                          rel_err_y_lower, rel_err_y_upper);
+  rel_err_graph->SetFillStyle( 3004 );
+  rel_err_graph->SetFillColorAlpha( 3, 0.9 );
+  rel_err_graph->SetLineWidth( 0 );
+
+  TGraphAsymmErrors * abs_err_graph = new TGraphAsymmErrors( bins, sys_x, sys_y, 
+                                          err_x_lower, err_x_upper,
+                                          abs_err_y_lower, abs_err_y_upper);
+  abs_err_graph->SetFillStyle( 3004 );
+  abs_err_graph->SetFillColorAlpha( 3, 0.9 );
+  abs_err_graph->SetLineWidth( 0 );
+
+  // style base and sys;
+  std::vector< float > base_style = { 1, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0 };
+  std::vector< float > sys_style =  { 1, 0.0, 0.0, 0.0, 0, kRed+1, 0.5, kRed + 1 };
+
+  style_hist( base, base_style );
+  style_hist( sys, base_style );
+
+  // construct canvases
+  TCanvas * error_canv = new TCanvas( "err_canv", "", 100, 100, 2000, 2000 );
+  error_canv->Divide( 2, 2 );
+  TPad * current_pad;
+
+  current_pad = (TPad *) error_canv->cd( 1 );
+  hist_prep_axes( base, true );
+  add_pad_title( current_pad, Form( "%s %s", var.c_str(), unique.c_str() ), true );
+  add_atlas_decorations( current_pad, true, false );
+  set_axis_labels( base, var_bound.get_x_str(), Form( "Extracted Yield %s", var_bound.get_y_str().c_str() ) );
+  TLegend * base_legend = create_atlas_legend();
+  base_legend->AddEntry( base, "Nominal" );
+  base_legend->AddEntry( sys, "Systematic" );
+
+  current_pad = (TPad *) error_canv->cd( 3 );
+  rel_err_graph->Draw( "3" );
+  unit_line->Draw( "L" );
+  error_prep_axes( rel_err_graph );
+  add_pad_title( current_pad, Form( "Relative Error %s %s", var.c_str(), unique.c_str() ), false );
+  add_atlas_decorations( current_pad, true, false );
+  set_err_axis_labels( rel_err_graph, var_bound.get_x_str(), Form( "Relative Error %s", var_bound.get_y_str().c_str() ) );
+
+  current_pad = (TPad *) error_canv->cd( 4 );
+  abs_err_graph->Draw( "3" );
+  zero_line->Draw( "L" );
+  error_prep_axes( abs_err_graph );
+  add_pad_title( current_pad, Form( "Absolute Error %s %s", var.c_str(), unique.c_str() ), false );
+  add_atlas_decorations( current_pad, true, false );
+  set_err_axis_labels( abs_err_graph, var_bound.get_x_str(), Form( "Absolute Error %s", var_bound.get_y_str().c_str() ) );
+
+  error_canv->SaveAs( Form( "%s_%s_sys.png", var.c_str(), unique.c_str() ) );
+
+}
+
+
+
+
+
 
 //class progress_bar {
 //

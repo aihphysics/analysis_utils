@@ -12,115 +12,6 @@ bound bound_mgr::get_bound( std::string name ){
   }
 }
 
-std::string bound_mgr::get_var( std::string name ){
-  return bounds->find( name )->second.get_var();
-}
-
-int bound_mgr::get_bins( std::string name ){
-  return bounds->find( name )->second.get_bins();
-}
-
-double bound_mgr::get_min( std::string name ){
-  return bounds->find( name )->second.get_min();
-}
-
-double bound_mgr::get_max( std::string name ){
-  return bounds->find( name )->second.get_max();
-}
-
-std::string bound_mgr::get_units( std::string name ){
-  return bounds->find( name )->second.get_units();
-}
-
-std::string bound_mgr::get_ltx( std::string name ){
-  return bounds->find( name )->second.get_ltx();
-}
-
-double bound_mgr::get_width( std::string name ){
-  double max  = ( bounds->find( name )->second ).get_max();
-  double min  = ( bounds->find( name )->second ).get_min();
-  return ( max - min );
-}
-
-double bound_mgr::get_bin_width( std::string name ){
-  return ( this->get_width( name ) )/( (double) this->get_bins( name ) );
-}
-// end of basic getters
-
-// start of complex getters
-// getter to produce the cut this bound would produce
-std::string bound_mgr::get_cut( std::string name ){
-  double temp_min = this->get_min( name );
-  double temp_max = this->get_max( name );
-  std::string temp_name = this->get_var( name );
-  return std::string( Form( "(%s>%.5f)&&(%s<%.5f)", temp_name.c_str(), temp_min,
-                            temp_name.c_str(), temp_max ) );
-}
-
-// getter to produce a series of cuts if this bound is subdivided by a number of bins
-std::vector< std::string > bound_mgr::get_cut_series( std::string name, int bins ){
-  if ( bins == 0 ){
-    bins = this->get_bins( name );
-  }
-  std::vector< std::string > cut_series;
-  double min = this->get_min( name );
-  double max = this->get_max( name );
-  double width = ( max - min )/( (double) bins );
-  std::string var = this->get_var( name );
-  for ( int cut_idx = 0; cut_idx < bins; cut_idx++ ){
-    double lower = min + width*cut_idx;
-    double upper = lower + width;
-    cut_series.push_back( Form( "(%s>%.5f)&&(%s<%.5f)", var.c_str(), lower, 
-                                var.c_str(), upper ) );
-  }
-  return cut_series;
-}
-
-// getter too
-std::vector< std::string > bound_mgr::get_series_names( std::string name, int bins ){
-  
-  if ( bins == 0 ){ bins = this->get_bins( name ); }
-  std::vector< std::string > series_names;
-  for ( int cut_idx = 0; cut_idx < bins; cut_idx++ ){
-    series_names.push_back( Form( "%s%i", name.c_str(), cut_idx ) ); 
-  }
-  return series_names;
-}
-
-
-// start of setters
-void bound_mgr::set_name( std::string name, std::string new_name ){
-  auto bound = bounds->extract( name );
-  bound.key() = new_name;
-  bound.mapped().set_name( new_name );
-  bounds->insert( std::move( bound ) );
-}
-
-void bound_mgr::set_var( std::string name, std::string var ){
-  bounds->find( name )->second.set_var( var );
-}
-
-void bound_mgr::set_bins( std::string name, int bins ){
-  bounds->find( name )->second.set_bins( bins );
-}
-
-void bound_mgr::set_min( std::string name, double min ){
-  bounds->find( name )->second.set_min( min );
-}
-
-void bound_mgr::set_max( std::string name, double max ){
-  bounds->find( name )->second.set_max( max );
-}
-
-void bound_mgr::set_units( std::string name, std::string units ){
-  bounds->find( name )->second.set_units( units );
-}
-
-void bound_mgr::set_ltx( std::string name, std::string ltx ){
-  bounds->find( name )->second.set_ltx( ltx );
-}
-// end of setters
-
 // add a blank bound
 void bound_mgr::add_bound( std::string name ){
   bounds->insert( std::pair< std::string, bound>( name, bound( name ) ) );
@@ -138,20 +29,6 @@ void bound_mgr::add_bound( std::string name, std::string var, int bins, double m
   temp_bound.set_units( units );
   temp_bound.set_ltx( ltx );
   bounds->insert( std::pair< std::string, bound>( name, temp_bound ) );
-}
-
-// sets the details of a bound
-void bound_mgr::set_bound( std::string name, std::string var, int bins, double min, double max ){
-  this->set_bound( name, var, bins, min, max, this->get_units( name ), this->get_ltx( name ) );
-}
-
-void bound_mgr::set_bound( std::string name, std::string var, int bins, double min, double max, std::string units, std::string ltx ){
-  this->set_var( name, var );
-  this->set_bins( name, bins );
-  this->set_min( name, min );
-  this->set_max( name, max );
-  this->set_units( name, units );
-  this->set_ltx( name, ltx );
 }
 
 // load the bound manager

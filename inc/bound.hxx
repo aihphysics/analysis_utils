@@ -62,6 +62,18 @@ extern "C" class bound {
     double get_max();
     std::string get_ltx();
     std::string get_units();
+    std::string get_cut();
+    std::vector< std::string > get_cut_series( int bins=0 );
+    std::vector< std::string > get_series_names( int bins=0 );
+    double get_width();
+    double get_bin_width();
+    double get_bin_width( int bins );
+    TH1F * get_hist();
+    std::string get_x_str();
+    std::string get_y_str();
+    std::string get_x_str( int bins );
+    std::string get_y_str( int bins );
+
 
 };
 
