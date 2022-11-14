@@ -10,7 +10,7 @@ extern "C" class bound_mgr final{
 
   private:
 
-    // members, config location and map, should probably be unordered set. 
+    // members, config location and map;. 
     std::string bound_mgr_filename;
     std::unordered_map< std::string, bound > * bounds;
 
@@ -36,6 +36,7 @@ extern "C" class bound_mgr final{
     void add_bound( std::string name, std::string var, int bins, double min, double max );
     void add_bound( std::string name, std::string var, int bins, double min, double max, std::string units, std::string ltx );
     void process_bounds_string( std::string bounds_string );
+    std::string merge_cut( std::string & first, std::string & second );
 
 };
 

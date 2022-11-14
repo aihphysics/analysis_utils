@@ -26,7 +26,7 @@ void align_sg( TF1 * sg_func, TH1F * hist, bool limit ){
 
 }
 
-void align_dg( TF1 * dg_func, TH1F * hist, bool limit){
+void align_dg( TF1 * dg_func, TH1F * hist, bool limit ){
   dg_func->SetParameter( 0, hist->GetMaximum()*(2./3.) );
   dg_func->SetParameter( 1, hist->GetMean() );
   dg_func->SetParameter( 2, hist->GetStdDev() );
@@ -38,9 +38,21 @@ void align_dg( TF1 * dg_func, TH1F * hist, bool limit){
   }
 }
 
-void hist_prep_axes( TH1 * hist, bool zero ){
+void hist_prep_axes( TH1 * hist, bool zero, bool centre, double centre_val ){
   //hist->GetXaxis()->SetRange( hist->GetXaxis()->GetXmin(), hist->GetXaxis()->GetXmax() );
-  hist->GetYaxis()->SetRangeUser( !zero * hist->GetMinimum() * 1.75, hist->GetMaximum() * 1.75 );
+  
+  double min = ( zero ) ? 0.0 : hist->GetMinimum();
+  if ( min < 0.0 ){ min *= 1.75; }
+  else { min *= 0.55; }
+  double max = hist->GetMaximum()*1.75;
+  if ( centre ){
+    double min_diff = abs( hist->GetMaximum() - centre_val );
+    double max_diff = abs( hist->GetMinimum() - centre_val );;
+    double range = std::max( { min_diff, max_diff } );
+    min = centre_val-range;
+    max = centre_val-range;
+  }
+  hist->GetYaxis()->SetRangeUser( min, max );
   hist->GetYaxis()->SetLabelSize( 0.035 );
   hist->GetYaxis()->SetTitleSize( 0.035 );
   hist->GetXaxis()->SetLabelSize( 0.035 );
@@ -101,7 +113,7 @@ TH1F * errorbar_to_hist( TH1F * hist, bool absolute ){
 	return err_hist;
 }
 
-// turns a base histogram and a hisogram representing the error into
+// turns a base histogram and a histogram representing the error into
 // a single histogram with an errorbar
 TH1F * hist_to_errorbar( TH1F * base, TH1F * err_hist, bool absolute ){
   TH1F * errorbar_hist = (TH1F *) base->Clone();
@@ -116,7 +128,9 @@ TH1F * hist_to_errorbar( TH1F * base, TH1F * err_hist, bool absolute ){
 	return errorbar_hist;
 }
 
-// take a histogram and an error, convert this into a histogram with the systematic as an error bar;
+// take a nominal histogram and a systematic, 
+// convert this into a histogram with the systematic as an error bar;
+// absolute error obviously
 TH1F * single_sys_to_error( TH1F * base, TH1F * sys ){
   TH1F * err_hist = (TH1F *) base->Clone();
   err_hist->Reset();
@@ -128,6 +142,8 @@ TH1F * single_sys_to_error( TH1F * base, TH1F * sys ){
   return err_hist;
 }
 
+// take a nominal histogram and a systematic
+// turn this into the absolute or relative error histogram
 TH1F * sys_to_error_hist( TH1F * base, TH1F * sys, bool absolute ){
   TH1F * err_hist = (TH1F *) base->Clone();
   err_hist->Reset();
@@ -155,6 +171,7 @@ void make_hf_fit_histogram( char bin_name[150], char err_name[150], TFile* sourc
   if ( !base_error_available ){ reco_hist->Sumw2(); }
 }
 
+// Combine a single error group into an errorbar
 void combine_sys_group( std::vector< TH1F *> & group_systematics, TH1F * group_hist, TH1F * base ){
   int bins = group_systematics.at(0)->GetNbinsX();
   std::vector< double > err_max, err_min, combined_sys_err;
@@ -344,7 +361,10 @@ TLegend * create_stat_legend(){
 
 //TGraphAsymmErrors * diff_to_err( TH1F * diff, bool absolute);
 
-void compare_systematic( TH1F * base, TH1F * sys, const std::string & var, const std::string & unique ){
+void compare_systematic( TH1F * base_o, TH1F * sys_o, const std::string & var, const std::string & unique ){
+
+  TH1F * base = (TH1F *) base_o->Clone();
+  TH1F * sys = (TH1F *) sys_o->Clone();
   
   // prep a bound manager
   bound_mgr * selections = new bound_mgr();
@@ -355,13 +375,17 @@ void compare_systematic( TH1F * base, TH1F * sys, const std::string & var, const
   int bins = var_bound.get_bins();
   double min = var_bound.get_min();
   double max = var_bound.get_max();
-  double width = var_bound.get_width();
+  double width = var_bound.get_bin_width();
 
   // ready lines and diffs
   TF1 * unit_line = new TF1( "unit_line", "1", min, max );
   TF1 * zero_line = new TF1( "zero_line", "1", min, max );
+  TH1F * unit_hist = new TH1F( "unit", "", bins, min, max );
+  for ( int idx = 1; idx <= unit_hist->GetNbinsX(); idx++ ){ unit_hist->SetBinContent( idx, 1.0); }
   TH1F * rel_diff = sys_to_error_hist( base, sys, false );
   TH1F * abs_diff = sys_to_error_hist( base, sys, true );
+  TH1F * errorbar_hist = single_sys_to_error( base, sys );
+
 
   // diff to grapherr start
   double * sys_x = new double[bins];
@@ -394,28 +418,31 @@ void compare_systematic( TH1F * base, TH1F * sys, const std::string & var, const
     }
   }
 
+  rel_diff->Add( rel_diff, unit_hist );
 
   // create symm error graphs
   TGraphAsymmErrors * rel_err_graph = new TGraphAsymmErrors( bins, sys_x, sys_y, 
-                                          err_x_lower, err_x_upper,
+                                       err_x_lower, err_x_upper,
                                           rel_err_y_lower, rel_err_y_upper);
-  rel_err_graph->SetFillStyle( 3004 );
-  rel_err_graph->SetFillColorAlpha( 3, 0.9 );
+  rel_err_graph->SetFillStyle( 1 );
+  rel_err_graph->SetFillColorAlpha( kBlue+1, 0.6 );
   rel_err_graph->SetLineWidth( 0 );
 
   TGraphAsymmErrors * abs_err_graph = new TGraphAsymmErrors( bins, sys_x, sys_y, 
                                           err_x_lower, err_x_upper,
                                           abs_err_y_lower, abs_err_y_upper);
-  abs_err_graph->SetFillStyle( 3004 );
-  abs_err_graph->SetFillColorAlpha( 3, 0.9 );
+  abs_err_graph->SetFillStyle( 1 );
+  abs_err_graph->SetFillColorAlpha( kBlue+1, 0.6 );
   abs_err_graph->SetLineWidth( 0 );
 
   // style base and sys;
-  std::vector< float > base_style = { 1, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0 };
-  std::vector< float > sys_style =  { 1, 0.0, 0.0, 0.0, 0, kRed+1, 0.5, kRed + 1 };
+  std::vector< float > base_style = { 1, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 3.0, 0, 0, 0 };
+  std::vector< float > errorbar_style = { 1, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0 };
+  std::vector< float > sys_style =  { 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, kRed+1, 0.6, 1 };
 
   style_hist( base, base_style );
-  style_hist( sys, base_style );
+  style_hist( sys, sys_style );
+  style_hist( errorbar_hist, errorbar_style );
 
   // construct canvases
   TCanvas * error_canv = new TCanvas( "err_canv", "", 100, 100, 2000, 2000 );
@@ -423,6 +450,8 @@ void compare_systematic( TH1F * base, TH1F * sys, const std::string & var, const
   TPad * current_pad;
 
   current_pad = (TPad *) error_canv->cd( 1 );
+  base->Draw( "HIST" );
+  sys->Draw( "HIST SAMES" );
   hist_prep_axes( base, true );
   add_pad_title( current_pad, Form( "%s %s", var.c_str(), unique.c_str() ), true );
   add_atlas_decorations( current_pad, true, false );
@@ -430,28 +459,66 @@ void compare_systematic( TH1F * base, TH1F * sys, const std::string & var, const
   TLegend * base_legend = create_atlas_legend();
   base_legend->AddEntry( base, "Nominal" );
   base_legend->AddEntry( sys, "Systematic" );
+  base_legend->Draw( "SAME" );
+
+  current_pad = (TPad *) error_canv->cd( 2);
+  errorbar_hist->Draw( "HIST E1" );
+  hist_prep_axes( errorbar_hist, true );
+  add_pad_title( current_pad, Form( "%s %s", var.c_str(), unique.c_str() ), true );
+  add_atlas_decorations( current_pad, true, false );
+  set_axis_labels( errorbar_hist, var_bound.get_x_str(), Form( "Extracted Yield %s", var_bound.get_y_str().c_str() ) );
+  TLegend * errorbar_legend = create_atlas_legend();
+  errorbar_legend->AddEntry( errorbar_hist, "#splitline{Nominal +}{sys error}" );
+  errorbar_legend->Draw( "SAME" );
+
 
   current_pad = (TPad *) error_canv->cd( 3 );
-  rel_err_graph->Draw( "3" );
-  unit_line->Draw( "L" );
-  error_prep_axes( rel_err_graph );
+  rel_diff->Draw( "HIST P" );
+  rel_diff->SetMarkerStyle( 21 );
+  rel_err_graph->Draw( "3 SAME ");
+  unit_line->Draw( "SAME L" );
+  hist_prep_axes( rel_diff, true );// true, 1.0 );
   add_pad_title( current_pad, Form( "Relative Error %s %s", var.c_str(), unique.c_str() ), false );
   add_atlas_decorations( current_pad, true, false );
-  set_err_axis_labels( rel_err_graph, var_bound.get_x_str(), Form( "Relative Error %s", var_bound.get_y_str().c_str() ) );
+  set_axis_labels( rel_diff, var_bound.get_x_str(), Form( "Relative Error %s", var_bound.get_y_str().c_str() ) );
+  if ( unique.find( "dz02" ) != std::string::npos ){ rel_diff->GetYaxis()->SetRangeUser( 0.5, 1.5 ); }
+  TLegend * rel_legend = create_atlas_legend();
+  rel_legend->AddEntry( rel_err_graph, "Relative Error" );
+  rel_legend->AddEntry( unit_line, "Nominal" );
+  rel_legend->Draw( "SAME" );
 
   current_pad = (TPad *) error_canv->cd( 4 );
-  abs_err_graph->Draw( "3" );
-  zero_line->Draw( "L" );
-  error_prep_axes( abs_err_graph );
-  add_pad_title( current_pad, Form( "Absolute Error %s %s", var.c_str(), unique.c_str() ), false );
+  abs_diff->Draw( "HIST P" );
+  abs_diff->SetMarkerStyle( 21 );
+  abs_err_graph->Draw( "3 SAME" );
+  zero_line->Draw( "SAME L" );
+  hist_prep_axes( abs_diff, false );//, true, 0.0 );
+  add_pad_title( current_pad, Form( "Absolute Error %s %s", var.c_str(), unique.c_str() ), true );
   add_atlas_decorations( current_pad, true, false );
-  set_err_axis_labels( abs_err_graph, var_bound.get_x_str(), Form( "Absolute Error %s", var_bound.get_y_str().c_str() ) );
-
-  error_canv->SaveAs( Form( "%s_%s_sys.png", var.c_str(), unique.c_str() ) );
+  set_axis_labels( abs_diff, var_bound.get_x_str(), Form( "Absolute Error %s", var_bound.get_y_str().c_str() ) );
+  TLegend * abs_legend = create_atlas_legend();
+  abs_legend->AddEntry( abs_err_graph, "Absolute Error" );
+  abs_legend->AddEntry( zero_line, "Nominal" );
+  abs_legend->Draw( "SAME" );
+  
+  error_canv->SaveAs( Form( "./sys/%s_%s_sys.png", var.c_str(), unique.c_str() ) );
+  delete error_canv;
 
 }
 
+void split_dg( TF1 * dg, TF1 * inner, TF1 * outer ){
 
+  inner->SetParameter( 0, dg->GetParameter( 0 ) );
+  outer->SetParameter( 0, dg->GetParameter( 3 ) );
+
+  inner->SetParameter( 1, dg->GetParameter( 1 ) );
+  outer->SetParameter( 1, dg->GetParameter( 1 ) );
+
+  inner->SetParameter( 2, dg->GetParameter( 2 ) );
+  outer->SetParameter( 2, dg->GetParameter( 4 ) );
+
+
+}
 
 
 

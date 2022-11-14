@@ -35,6 +35,7 @@
 #include <fstream>
 #include <sstream>
 #include <cassert>
+#include <numeric>
 
 #include <unistd.h>
 #include <getopt.h>

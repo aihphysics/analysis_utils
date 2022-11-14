@@ -62,7 +62,7 @@ std::vector< std::string > bound::get_series_names( int bins ){
   if ( bins == 0 ){ bins = this->get_bins(); }
   std::vector< std::string > series_names;
   for ( int cut_idx = 0; cut_idx < bins; cut_idx++ ){
-    series_names.push_back( Form( "%s%i", name.c_str(), cut_idx ) ); 
+    series_names.push_back( Form( "%s%i-%i", name.c_str(), cut_idx, bins ) ); 
   }
   return series_names;
 }

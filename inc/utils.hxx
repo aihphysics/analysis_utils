@@ -6,7 +6,7 @@
 #include "bound.hxx"
 #include "bound_mgr.hxx"
 
-extern "C" void hist_prep_axes( TH1 * hist, bool zero=false );
+extern "C" void hist_prep_axes( TH1 * hist, bool zero=false, bool centre=false, double centre_val=0 );
 extern "C" void error_prep_axes( TGraphAsymmErrors * err );
 extern "C" TH1F * errorbar_to_hist( TH1F * hist, bool absolute=true );
 extern "C" TH1F * hist_to_errorbar( TH1F * base, TH1F * err_hist, bool absolute=true );

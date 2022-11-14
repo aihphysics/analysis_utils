@@ -52,13 +52,34 @@ void bound_mgr::load_bound_mgr( std::string bound_mgr_filename ){
     this->bounds->insert( std::pair<std::string, bound>(bound_vec.at(0), temp_bound ) );
 	}	
   bound_mgr_file.close();
+  std::cout << "loaded " << this->bounds->size() << " different bounds" << std::endl;
 }
 
 // process additional bounds in string form
 // bounds manually supplied in string form overwrite the bounds already stored
+// string supplied bounds do not contain ltx, or units.
 void bound_mgr::process_bounds_string( std::string bounds_string ){
 
   if ( bounds_string.empty() ){ return; }
+
+//  std::vector< std::string > single_bounds_vec;
+//  split_strings( single_bounds_vec, bounds_string, "#" );
+//
+//
+//  for ( std::string bound_str : single_bounds_vec ){
+//
+//    std::vector< std::string > bound_vec;
+//    split_strings( bound_vec, bound_str, ":" );
+//    //std::string_view name = bound_vec.at( 0 );
+//    std::string name = bound_vec.at(0); 
+//    int bins = ( !bound_vec.at(1).empty() ) ? : ; 
+//    double min = ( !bound_vec.at(2).empty() ) ? : ; 
+//    double max = ( !bound_vec.at(3).empty() ) ? : ; 
+//
+//
+//  }
+//
+  
 
   std::vector< std::string > single_bounds_vec;
   split_strings( single_bounds_vec, bounds_string, "#" );
@@ -109,12 +130,8 @@ void bound_mgr::process_bounds_string( std::string bounds_string ){
 
 
 
+std::string bound_mgr::merge_cut( std::string & first, std::string & second ){
 
+  return std::string( (this->bounds->find(first))->second.get_cut() + "&&" + (this->bounds->find(second))->second.get_cut() );
 
-
-
-
-
-
-
-
+}
