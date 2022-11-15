@@ -1,0 +1,6 @@
+fit specifier key;
+function,analysischain,variable,mass,fit_params,fit_start,fit_end,param1start#...#paramNstart,param1lower#param2lower#...#paramnlower,param1upper#...#paramNupper
+for no limit/start, leave ##
+
+style specifier key
+
