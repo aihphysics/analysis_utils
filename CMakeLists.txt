@@ -1,5 +1,5 @@
 
-project( lib )
+project( analysis_utils )
 
 cmake_minimum_required( VERSION 3.14 )
 
@@ -13,5 +13,4 @@ set( files src/bound.cxx src/bound_mgr.cxx src/cutflow.cxx src/entry.cxx src/sty
 
 add_library( analysisutil SHARED ${files} )
 set_target_properties( analysisutil PROPERTIES LINKER_LANGUAGE CXX )
-
 target_link_libraries( analysisutil PRIVATE ROOT::Core ${ROOT_LIBRARIES})
